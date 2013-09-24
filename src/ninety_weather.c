@@ -16,13 +16,13 @@
 #define MY_UUID { 0x91, 0x41, 0xB6, 0x28, 0xBC, 0x89, 0x49, 0x8E, 0xB1, 0x47, 0x29, 0x08, 0xF1, 0x7C, 0x3F, 0xAC}
 
 PBL_APP_INFO(MY_UUID,
-	     "91 Weather", "rfrcarvalho",
-	     1, 5, /* App major/minor version */
+	     "91.5 Weather", "calcy",
+	     0, 2, /* App major/minor version */
 	     RESOURCE_ID_IMAGE_MENU_ICON,
 	     APP_INFO_WATCH_FACE);
 
 Window window;
-TextLayer cwLayer; 					// The calendar week
+//TextLayer cwLayer; 					// The calendar week
 TextLayer text_sunrise_layer;
 TextLayer text_sunset_layer;
 TextLayer text_temperature_layer;
@@ -85,6 +85,19 @@ const int BIG_DIGIT_IMAGE_RESOURCE_IDS[] = {
   RESOURCE_ID_IMAGE_NUM_7,
   RESOURCE_ID_IMAGE_NUM_8,
   RESOURCE_ID_IMAGE_NUM_9
+};
+
+const int SECOND_IMAGE_RESOURCE_IDS[] = {
+	RESOURCE_ID_IMAGE_SECOND_0,
+	RESOURCE_ID_IMAGE_SECOND_1,
+	RESOURCE_ID_IMAGE_SECOND_2,
+	RESOURCE_ID_IMAGE_SECOND_3,
+	RESOURCE_ID_IMAGE_SECOND_4,
+	RESOURCE_ID_IMAGE_SECOND_5,
+	RESOURCE_ID_IMAGE_SECOND_6,
+	RESOURCE_ID_IMAGE_SECOND_7,
+	RESOURCE_ID_IMAGE_SECOND_8,
+	RESOURCE_ID_IMAGE_SECOND_9
 };
 
 #define TOTAL_TIME_DIGITS 4
@@ -362,17 +375,22 @@ void receivedtime(int32_t utc_offset_seconds, bool is_dst, uint32_t unixtime, co
     }
 }
 
+void update_second(PblTm *current_time) {
+	set_container_image(&date_digits_images[6], SECOND_IMAGE_RESOURCE_IDS[current_time->tm_sec/10], GPoint(106, 124));
+	set_container_image(&date_digits_images[7], SECOND_IMAGE_RESOURCE_IDS[current_time->tm_sec%10], GPoint(123, 124));
+}
+
 void update_display(PblTm *current_time) {
   
   unsigned short display_hour = get_display_hour(current_time->tm_hour);
   
   //Hour
-  set_container_image(&time_digits_images[0], BIG_DIGIT_IMAGE_RESOURCE_IDS[display_hour/10], GPoint(4, 94));
-  set_container_image(&time_digits_images[1], BIG_DIGIT_IMAGE_RESOURCE_IDS[display_hour%10], GPoint(37, 94));
+  set_container_image(&time_digits_images[0], BIG_DIGIT_IMAGE_RESOURCE_IDS[display_hour/10], GPoint(4, 79));
+  set_container_image(&time_digits_images[1], BIG_DIGIT_IMAGE_RESOURCE_IDS[display_hour%10], GPoint(37, 79));
   
   //Minute
-  set_container_image(&time_digits_images[2], BIG_DIGIT_IMAGE_RESOURCE_IDS[current_time->tm_min/10], GPoint(80, 94));
-  set_container_image(&time_digits_images[3], BIG_DIGIT_IMAGE_RESOURCE_IDS[current_time->tm_min%10], GPoint(111, 94));
+  set_container_image(&time_digits_images[2], BIG_DIGIT_IMAGE_RESOURCE_IDS[current_time->tm_min/10], GPoint(80, 79));
+  set_container_image(&time_digits_images[3], BIG_DIGIT_IMAGE_RESOURCE_IDS[current_time->tm_min%10], GPoint(111, 79));
    
   if (the_last_hour != display_hour){
 	  
@@ -380,35 +398,35 @@ void update_display(PblTm *current_time) {
 	  text_layer_set_text(&DayOfWeekLayer, DAY_NAME_LANGUAGE[current_time->tm_wday]); 
 	  
 	  // Day
-	  set_container_image(&date_digits_images[0], DATENUM_IMAGE_RESOURCE_IDS[current_time->tm_mday/10], GPoint(day_month_x[0], 71));
-	  set_container_image(&date_digits_images[1], DATENUM_IMAGE_RESOURCE_IDS[current_time->tm_mday%10], GPoint(day_month_x[0] + 13, 71));
+	  set_container_image(&date_digits_images[0], DATENUM_IMAGE_RESOURCE_IDS[current_time->tm_mday/10], GPoint(day_month_x[0], 56));
+	  set_container_image(&date_digits_images[1], DATENUM_IMAGE_RESOURCE_IDS[current_time->tm_mday%10], GPoint(day_month_x[0] + 13, 56));
 	  
 	  // Month
-	  set_container_image(&date_digits_images[2], DATENUM_IMAGE_RESOURCE_IDS[(current_time->tm_mon+1)/10], GPoint(day_month_x[1], 71));
-	  set_container_image(&date_digits_images[3], DATENUM_IMAGE_RESOURCE_IDS[(current_time->tm_mon+1)%10], GPoint(day_month_x[1] + 13, 71));
+	  set_container_image(&date_digits_images[2], DATENUM_IMAGE_RESOURCE_IDS[(current_time->tm_mon+1)/10], GPoint(day_month_x[1], 56));
+	  set_container_image(&date_digits_images[3], DATENUM_IMAGE_RESOURCE_IDS[(current_time->tm_mon+1)%10], GPoint(day_month_x[1] + 13, 56));
 	  
 	  // Year
-	  set_container_image(&date_digits_images[4], DATENUM_IMAGE_RESOURCE_IDS[((1900+current_time->tm_year)%1000)/10], GPoint(day_month_x[2], 71));
-	  set_container_image(&date_digits_images[5], DATENUM_IMAGE_RESOURCE_IDS[((1900+current_time->tm_year)%1000)%10], GPoint(day_month_x[2] + 13, 71));
+	  set_container_image(&date_digits_images[4], DATENUM_IMAGE_RESOURCE_IDS[((1900+current_time->tm_year)%1000)/10], GPoint(day_month_x[2], 56));
+	  set_container_image(&date_digits_images[5], DATENUM_IMAGE_RESOURCE_IDS[((1900+current_time->tm_year)%1000)%10], GPoint(day_month_x[2] + 13, 56));
 		
-	  if (!clock_is_24h_style()) {
-		if (current_time->tm_hour >= 12) {
-		  set_container_image(&time_format_image, RESOURCE_ID_IMAGE_PM_MODE, GPoint(118, 140));
-		} else {
-		  layer_remove_from_parent(&time_format_image.layer.layer);
-		  bmp_deinit_container(&time_format_image);
-		}
+	 // if (!clock_is_24h_style()) {
+	//	if (current_time->tm_hour >= 12) {
+	//	  set_container_image(&time_format_image, RESOURCE_ID_IMAGE_PM_MODE, GPoint(118, 140));
+	//	} else {
+	//	  layer_remove_from_parent(&time_format_image.layer.layer);
+	//	  bmp_deinit_container(&time_format_image);
+	//	}
 
-		if (display_hour/10 == 0) {
-		  layer_remove_from_parent(&time_digits_images[0].layer.layer);
-		  bmp_deinit_container(&time_digits_images[0]);
-		}
-	  }
+	//	if (display_hour/10 == 0) {
+	//	  layer_remove_from_parent(&time_digits_images[0].layer.layer);
+	//	  bmp_deinit_container(&time_digits_images[0]);
+	//	}
+	//  }
 	  
 	  // -------------------- Calendar week  
-	  static char cw_text[] = "XX00";
-	  string_format_time(cw_text, sizeof(cw_text), TRANSLATION_CW , current_time);
-	  text_layer_set_text(&cwLayer, cw_text); 
+	  //static char cw_text[] = "XX00";
+	  //string_format_time(cw_text, sizeof(cw_text), TRANSLATION_CW , current_time);
+	  //text_layer_set_text(&cwLayer, cw_text); 
 	  // ------------------- Calendar week  
 	  
 	  the_last_hour = display_hour;
@@ -417,34 +435,38 @@ void update_display(PblTm *current_time) {
 }
 
 
-void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
+void handle_second_tick(AppContextRef ctx, PebbleTickEvent *t) {
   (void)ctx;	
 
-    update_display(t->tick_time);
+    update_second(t->tick_time);
 	
-	if(!located || !(t->tick_time->tm_min % 15))
-	{
-		// Every 15 minutes, request updated weather
-		http_location_request();
+	if (t->units_changed & MINUTE_UNIT) {
+		update_display(t->tick_time);
+			
+		if(!located || !(t->tick_time->tm_min % 15))
+		{
+			// Every 15 minutes, request updated weather
+			http_location_request();
+		}
+		
+		// Every 15 minutes, request updated time
+		http_time_request();
+		
+		if(!calculated_sunset_sunrise)
+		{
+			// Start with some default values
+			text_layer_set_text(&text_sunrise_layer, "Wait!");
+			text_layer_set_text(&text_sunset_layer, "Wait!");
+		}
+		
+		if(!(t->tick_time->tm_min % 2) || data.link_status == LinkStatusUnknown) link_monitor_ping();
 	}
-	
-	// Every 15 minutes, request updated time
-	http_time_request();
-	
-	if(!calculated_sunset_sunrise)
-    {
-	    // Start with some default values
-	    text_layer_set_text(&text_sunrise_layer, "Wait!");
-	    text_layer_set_text(&text_sunset_layer, "Wait!");
-    }
-	
-	if(!(t->tick_time->tm_min % 2) || data.link_status == LinkStatusUnknown) link_monitor_ping();
 }
 
 void handle_init(AppContextRef ctx) {
   (void)ctx;
 
-	window_init(&window, "91 Weather");
+	window_init(&window, "91.5 Weather");
 	window_stack_push(&window, true /* Animated */);
   
 	window_set_background_color(&window, GColorBlack);
@@ -457,21 +479,21 @@ void handle_init(AppContextRef ctx) {
 	bmp_init_container(RESOURCE_ID_IMAGE_BACKGROUND, &background_image);
 	layer_add_child(&window.layer, &background_image.layer.layer);
 	
-	if (clock_is_24h_style()) {
-		bmp_init_container(RESOURCE_ID_IMAGE_24_HOUR_MODE, &time_format_image);
+	//if (clock_is_24h_style()) {
+	//	bmp_init_container(RESOURCE_ID_IMAGE_24_HOUR_MODE, &time_format_image);
 
-		time_format_image.layer.layer.frame.origin.x = 118;
-		time_format_image.layer.layer.frame.origin.y = 140;
+	//	time_format_image.layer.layer.frame.origin.x = 118;
+	//	time_format_image.layer.layer.frame.origin.y = 140;
 
-		layer_add_child(&window.layer, &time_format_image.layer.layer);
-	}
+	//	layer_add_child(&window.layer, &time_format_image.layer.layer);
+	//}
 
 	// Calendar Week Text
-	text_layer_init(&cwLayer, GRect(108, 50, 80 /* width */, 30 /* height */));
-	layer_add_child(&background_image.layer.layer, &cwLayer.layer);
-	text_layer_set_text_color(&cwLayer, GColorWhite);
-	text_layer_set_background_color(&cwLayer, GColorClear);
-	text_layer_set_font(&cwLayer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+	//text_layer_init(&cwLayer, GRect(108, 50, 80 /* width */, 30 /* height */));
+	//layer_add_child(&background_image.layer.layer, &cwLayer.layer);
+	//text_layer_set_text_color(&cwLayer, GColorWhite);
+	//text_layer_set_background_color(&cwLayer, GColorClear);
+	//text_layer_set_font(&cwLayer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
 
 	// Sunrise Text
 	text_layer_init(&text_sunrise_layer, window.layer.frame);
@@ -498,7 +520,7 @@ void handle_init(AppContextRef ctx) {
 	layer_add_child(&window.layer, &text_temperature_layer.layer);  
   
 	// Day of week text
-	text_layer_init(&DayOfWeekLayer, GRect(5, 62, 130 /* width */, 30 /* height */));
+	text_layer_init(&DayOfWeekLayer, GRect(5, 47, 130 /* width */, 30 /* height */));
 	layer_add_child(&background_image.layer.layer, &DayOfWeekLayer.layer);
 	text_layer_set_text_color(&DayOfWeekLayer, GColorWhite);
 	text_layer_set_background_color(&DayOfWeekLayer, GColorClear);
@@ -572,8 +594,8 @@ void pbl_main(void *params) {
     .init_handler = &handle_init,
     .deinit_handler = &handle_deinit,
     .tick_info = {
-      .tick_handler = &handle_minute_tick,
-      .tick_units = MINUTE_UNIT
+      .tick_handler = &handle_second_tick,
+      .tick_units = SECOND_UNIT
     },
 	.messaging_info = {
 		.buffer_sizes = {
